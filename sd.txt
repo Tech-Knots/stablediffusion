@@ -1,0 +1,47 @@
+# ---- Stable Diffusion Demo (Clean Version) ----
+from diffusers import StableDiffusionPipeline
+import torch
+import os
+
+# ✅ Ask for Hugging Face token (one time)
+hf_token = input("Enter your Hugging Face token: ").strip()
+
+# ✅ Detect device (GPU / CPU)
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+# ✅ Load Stable Diffusion safely
+pipe = StableDiffusionPipeline.from_pretrained(
+    "runwayml/stable-diffusion-v1-5",
+    use_safetensors=True,
+    torch_dtype=torch.float16 if device == "cuda" else torch.float32,
+    token=hf_token
+).to(device)
+
+# ✅ Create output folder
+os.makedirs("outputs", exist_ok=True)
+
+print("\n✅ Stable Diffusion ready!")
+print("Type 'exit' anytime to stop generating images.\n")
+
+# ✅ Image generation loop
+count = 1
+while True:
+    prompt = input("Enter your image prompt (or type 'exit' to quit): ").strip()
+    if prompt.lower() == "exit":
+        print("👋 Exiting gracefully...")
+        break
+
+    print("🎨 Generating image... please wait.")
+    image = pipe(prompt).images[0]
+
+    filename = f"outputs/output_{count}.png"
+    image.save(filename)
+    print(f"✅ Image saved as {filename}\n")
+
+    # Try to show image (if supported)
+    try:
+        image.show()
+    except Exception:
+        print("⚠️ Image preview not supported here, but saved successfully!")
+
+    count += 1
